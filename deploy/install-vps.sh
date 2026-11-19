@@ -22,7 +22,11 @@
 # =============================================================================
 set -euo pipefail
 
-DOMAIN=${DOMAIN:?Defina DOMAIN, ej. score.tudominio.com}
+# DOMAIN puede ser un dominio (con HTTPS) o la IP del VPS (solo HTTP, para probar sin dominio).
+DOMAIN=${DOMAIN:?Defina DOMAIN: un dominio (score.tudominio.com) o la IP del VPS}
+HTTP_ONLY=0
+[[ $DOMAIN =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && HTTP_ONLY=1
+SCHEME=$([[ $HTTP_ONLY -eq 1 ]] && echo http || echo https)
 REPO_URL=${REPO_URL:?Defina REPO_URL del repositorio en GitHub}
 ADMIN_EMAIL=${ADMIN_EMAIL:?Defina ADMIN_EMAIL (acceso del superadministrador y avisos de HTTPS)}
 BRANCH=${BRANCH:-main}
@@ -86,12 +90,14 @@ if [[ ! -f .env ]]; then
   cp .env.production.example .env
   ADMIN_PASS=$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 16)
   sed -i \
-    -e "s|^APP_URL=.*|APP_URL=https://${DOMAIN}|" \
+    -e "s|^APP_URL=.*|APP_URL=${SCHEME}://${DOMAIN}|" \
     -e "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASS}|" \
     -e "s|^MAIL_FROM_ADDRESS=.*|MAIL_FROM_ADDRESS=\"no-reply@${DOMAIN}\"|" \
     -e "s|^ADMIN_EMAIL=.*|ADMIN_EMAIL=${ADMIN_EMAIL}|" \
     -e "s|^ADMIN_PASSWORD=.*|ADMIN_PASSWORD=${ADMIN_PASS}|" .env
   sed -i 's/[[:space:]]*#.*$//' .env   # quita comentarios en línea del ejemplo
+  # Sin HTTPS la cookie de sesión no puede ser "secure" (si no, el login no funciona)
+  [[ $HTTP_ONLY -eq 1 ]] && sed -i "s|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=false|" .env
 fi
 chmod 640 .env
 
@@ -112,7 +118,29 @@ php artisan optimize
 chown -R www-data:www-data "$APP/app/storage" "$APP/app/bootstrap/cache"
 chgrp www-data .env
 
-step "8/9 Nginx + HTTPS"
+step "8/9 Nginx"
+if [[ $HTTP_ONLY -eq 1 ]]; then
+  echo "DOMAIN es una IP: se configura solo HTTP. Cuando tenga dominio, vuelva a ejecutar con DOMAIN=<dominio> para activar HTTPS."
+  cat > /etc/nginx/sites-available/hr-media-score <<NGINX
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    root ${APP}/app/public;
+    index index.php;
+    client_max_body_size 8M;
+    location / { try_files \$uri \$uri/ /index.php?\$query_string; }
+    location ~* ^/(build|assets)/ { expires 1y; add_header Cache-Control "public, immutable"; access_log off; }
+    location ~ \\.php\$ {
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+    location ~ /\\.(?!well-known).* { deny all; }
+    location ~* ^/storage/.*\\.php\$ { deny all; }
+}
+NGINX
+else
 sed -e "s|score.example.com|${DOMAIN}|g" -e "s|/var/www/hr-media-score/current/public|${APP}/app/public|" \
   deploy/nginx.conf > /etc/nginx/sites-available/hr-media-score
 # Primero solo HTTP para que certbot valide el dominio
@@ -125,6 +153,7 @@ NGINX
   nginx -t && systemctl reload nginx
   certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL"
   rm -f /etc/nginx/sites-available/hr-media-score-bootstrap
+fi
 fi
 ln -sf /etc/nginx/sites-available/hr-media-score /etc/nginx/sites-enabled/hr-media-score
 rm -f /etc/nginx/sites-enabled/default
@@ -151,8 +180,8 @@ echo "15 3 * * * root /usr/local/bin/hrms-backup >> /var/log/hrms-backup.log 2>&
 
 echo
 echo "============================================================"
-echo " HR Media Score instalado: https://${DOMAIN}"
-echo " Panel:  https://${DOMAIN}/acceso"
+echo " HR Media Score instalado: ${SCHEME}://${DOMAIN}"
+echo " Panel:  ${SCHEME}://${DOMAIN}/acceso"
 if [[ $FIRST_INSTALL -eq 1 ]]; then
   echo " Usuario: ${ADMIN_EMAIL}"
   echo " Contraseña: ${ADMIN_PASS}"
