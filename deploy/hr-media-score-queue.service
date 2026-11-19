@@ -1,0 +1,14 @@
+# /etc/systemd/system/hr-media-score-queue.service — trabajador de colas (correos de recuperación, futuras tareas)
+[Unit]
+Description=HR Media Score queue worker
+After=network.target mysql.service
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+WorkingDirectory=/var/www/hr-media-score/current
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
+[Install]
+WantedBy=multi-user.target

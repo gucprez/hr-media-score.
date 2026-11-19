@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource/barlow-condensed/500.css';
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/barlow-condensed/800.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../app/Enums/*.php';
+
+/* ── Identidad HR Media Score ─────────────────────────────── */
+@theme {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Barlow Condensed', 'Inter Variable', ui-sans-serif, sans-serif;
+
+    --color-ink-950: #0B101A;   /* fondo principal */
+    --color-ink-900: #101722;   /* fondo secundario */
+    --color-ink-800: #182131;   /* tarjetas */
+    --color-ink-700: #222D41;   /* bordes / hover */
+    --color-ink-600: #2E3B53;
+    --color-mute: #AAB4C5;      /* texto secundario */
+    --color-mute-dim: #7D889B;
+    --color-brand: #D92332;     /* rojo principal */
+    --color-brand-600: #B91C2A;
+    --color-brand-400: #EF4452;
+    --color-sport: #FF7A00;     /* naranja deportivo */
+    --color-success: #22C55E;
+    --color-warning: #F5B400;
+
+    --animate-fade-up: fade-up .45s cubic-bezier(.2,.7,.2,1) both;
+    --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
+
+    @keyframes fade-up {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: none; }
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .45; transform: scale(.8); }
+    }
+}
+
+@layer base {
+    html { color-scheme: dark; -webkit-tap-highlight-color: transparent; }
+    body { @apply bg-ink-950 text-white font-sans antialiased; font-feature-settings: 'cv11', 'ss01'; }
+    ::selection { background: var(--color-brand); color: #fff; }
+    :focus-visible { outline: 2px solid var(--color-sport); outline-offset: 2px; border-radius: 4px; }
+    [x-cloak] { display: none !important; }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+}
+
+@utility card {
+    @apply rounded-2xl border border-white/[.06] bg-ink-800;
+}
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap;
+}
+
+@utility badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
+}
+
+@layer components {
+    .font-score { @apply font-display font-bold tabular-nums tracking-tight; }
+    .eyebrow { @apply font-display text-xs font-semibold uppercase tracking-[.18em] text-mute; }
+    .heading { @apply font-display font-bold uppercase tracking-wide text-white; }
+
+    .card-hover { @apply transition duration-200 hover:border-white/15 hover:bg-ink-700/70; }
+    .divider { @apply border-white/[.06]; }
+
+    .btn-primary { @apply btn bg-brand text-white shadow-lg shadow-brand/20 hover:bg-brand-400 active:bg-brand-600; }
+    .btn-secondary { @apply btn border border-white/10 bg-ink-700 text-white hover:border-white/20 hover:bg-ink-600; }
+    .btn-ghost { @apply btn text-mute hover:bg-white/5 hover:text-white; }
+    .btn-danger { @apply btn border border-brand/40 text-brand-400 hover:bg-brand hover:text-white; }
+    .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
+
+    .input { @apply block w-full rounded-xl border border-white/10 bg-ink-900 px-3.5 py-2.5 text-sm text-white placeholder:text-mute-dim transition focus:border-sport focus:outline-none focus:ring-2 focus:ring-sport/25 disabled:opacity-60; }
+    .input-error { @apply border-brand-400 focus:border-brand-400 focus:ring-brand/30; }
+    .label { @apply mb-1.5 block text-sm font-medium text-white/90; }
+    .hint { @apply mt-1 text-xs text-mute-dim; }
+    .error { @apply mt-1.5 text-xs font-medium text-brand-400; }
+
+    .badge-live { @apply badge bg-brand/15 text-brand-400 ring-1 ring-brand/40; }
+    .badge-final { @apply badge bg-white/10 text-white; }
+    .badge-scheduled { @apply badge bg-sport/15 text-sport ring-1 ring-sport/30; }
+    .badge-muted { @apply badge bg-white/5 text-mute; }
+    .badge-success { @apply badge bg-success/15 text-success; }
+
+    .table-base { @apply w-full text-left text-sm; }
+    .table-base th { @apply px-4 py-3 font-display text-xs font-semibold uppercase tracking-wider text-mute; }
+    .table-base td { @apply px-4 py-3 align-middle; }
+    .table-base tbody tr { @apply border-t border-white/[.05] transition hover:bg-white/[.02]; }
+
+    .nav-link { @apply relative rounded-lg px-3 py-2 text-sm font-semibold text-mute transition hover:text-white; }
+    .nav-link-active { @apply text-white after:absolute after:inset-x-3 after:-bottom-[13px] after:h-0.5 after:rounded-full after:bg-brand; }
+
+    .side-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-mute transition hover:bg-white/5 hover:text-white; }
+    .side-link-active { @apply bg-brand/10 text-white ring-1 ring-brand/25; }
+
+    .glow-red { background: radial-gradient(60% 80% at 80% 0%, rgba(217,35,50,.28), transparent 60%), radial-gradient(50% 60% at 0% 100%, rgba(255,122,0,.10), transparent 60%); }
+    .court-lines { background-image: radial-gradient(circle at 85% 40%, transparent 0 140px, rgba(255,255,255,.04) 141px 142px, transparent 143px), linear-gradient(90deg, transparent calc(85% - 1px), rgba(255,255,255,.035) calc(85% - 1px) 85%, transparent 85%); }
+    .stripes { background: repeating-linear-gradient(115deg, var(--color-brand) 0 6px, transparent 6px 12px); }
+    .scrollbar-none { scrollbar-width: none; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+}
