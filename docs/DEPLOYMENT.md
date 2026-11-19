@@ -4,6 +4,18 @@
 
 Probado localmente en: Ubuntu 24.04, PHP 8.3, MySQL 8.0.46, Node 22.
 
+## Instalación automática (recomendada)
+
+En un VPS nuevo con Ubuntu 24.04, como root:
+
+```bash
+DOMAIN=score.tudominio.com REPO_URL=https://github.com/<usuario>/hr-media-score.git \
+ADMIN_EMAIL=tu@correo.com bash deploy/install-vps.sh
+```
+
+Instala y configura todo (pasos 1–8 de abajo) y muestra la contraseña del superadministrador.
+Volver a ejecutarlo actualiza la aplicación. Los pasos manuales siguientes documentan lo que hace.
+
 ## 1. Paquetes del servidor
 
 ```bash
