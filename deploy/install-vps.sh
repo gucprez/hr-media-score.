@@ -53,6 +53,14 @@ if ! command -v node >/dev/null || [[ $(node -v | cut -d. -f1 | tr -d v) -lt 20 
   apt-get install -y -qq nodejs
 fi
 php -r 'exit(gd_info()["WebP Support"] ? 0 : 1);' || { echo "PHP GD sin soporte WebP"; exit 1; }
+# Límites de PHP adecuados para logos y fotos (los de Ubuntu: 2 MB por archivo, 128 MB de memoria)
+cat > /etc/php/8.3/fpm/conf.d/99-hr-media-score.ini <<'INI'
+upload_max_filesize = 8M
+post_max_size = 12M
+memory_limit = 512M
+max_execution_time = 60
+INI
+cp /etc/php/8.3/fpm/conf.d/99-hr-media-score.ini /etc/php/8.3/cli/conf.d/99-hr-media-score.ini
 
 step "2/9 Firewall (SSH, HTTP, HTTPS)"
 ufw allow OpenSSH >/dev/null; ufw allow 'Nginx Full' >/dev/null; ufw --force enable >/dev/null

@@ -52,7 +52,7 @@ return [
     'size' => ['string' => 'El campo :attribute debe tener :size caracteres.'],
     'string' => 'El campo :attribute debe ser texto.',
     'unique' => 'El valor de :attribute ya está registrado.',
-    'uploaded' => 'No se pudo subir :attribute.',
+    'uploaded' => 'No se pudo subir :attribute: el archivo supera el tamaño que permite el servidor o la conexión se interrumpió.',
     'url' => 'El campo :attribute debe ser una URL válida.',
 
     'attributes' => [

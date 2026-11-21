@@ -125,3 +125,25 @@ it('lista jugadores con búsqueda en vivo (Livewire)', function () {
         ->set('search', 'Ramón')
         ->assertSee('Almonte')->assertDontSee('Brito')->assertDontSee('Ajeno');
 });
+
+it('procesa logos grandes sin agotar la memoria (límite de PHP de 128 MB)', function () {
+    $previous = ini_get('memory_limit');
+    ini_set('memory_limit', '128M');
+    try {
+        $user = userWithRole(Role::Organizer);
+        $this->actingAs($user)->post('/admin/teams', [
+            'name' => 'Logo Grande', 'is_active' => 1, 'logo' => UploadedFile::fake()->image('logo.png', 4800, 4800),
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        expect(Team::where('name', 'Logo Grande')->value('logo_path'))->toEndWith('.webp');
+    } finally {
+        ini_set('memory_limit', $previous);
+    }
+});
+
+it('un archivo de imagen corrupto se informa como error del campo, no como error 500', function () {
+    $user = userWithRole(Role::Organizer);
+    $team = Team::factory()->create(['club_id' => $user->club_id]);
+    $fake = UploadedFile::fake()->createWithContent('logo.png', "\x89PNG\r\n\x1a\n".str_repeat('x', 200));
+    $this->actingAs($user)->put("/admin/teams/{$team->id}", ['name' => $team->name, 'is_active' => 1, 'logo' => $fake])
+        ->assertSessionHasErrors('logo');
+});

@@ -78,7 +78,7 @@ class PlayerController extends Controller
     private function syncPhoto(PlayerRequest $request, Player $player): void
     {
         if ($request->hasFile('photo')) {
-            $player->forceFill(['photo_path' => $this->images->store($request->file('photo'), "clubs/{$player->club_id}/players", 600, $player->photo_path)])->save();
+            $player->forceFill(['photo_path' => $this->images->store($request->file('photo'), "clubs/{$player->club_id}/players", 600, $player->photo_path, 'photo')])->save();
         } elseif ($request->boolean('remove_photo') && $player->photo_path) {
             $this->images->delete($player->photo_path);
             $player->forceFill(['photo_path' => null])->save();
