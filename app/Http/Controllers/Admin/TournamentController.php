@@ -108,5 +108,11 @@ class TournamentController extends Controller
             $this->images->delete($tournament->logo_path);
             $tournament->forceFill(['logo_path' => null])->save();
         }
+        if ($request->hasFile('sponsor_logo')) {
+            $tournament->forceFill(['sponsor_logo_path' => $this->images->store($request->file('sponsor_logo'), "clubs/{$tournament->club_id}/sponsors", 700, $tournament->sponsor_logo_path, 'sponsor_logo')])->save();
+        } elseif ($request->boolean('remove_sponsor_logo') && $tournament->sponsor_logo_path) {
+            $this->images->delete($tournament->sponsor_logo_path);
+            $tournament->forceFill(['sponsor_logo_path' => null])->save();
+        }
     }
 }

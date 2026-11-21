@@ -8,7 +8,7 @@
         <x-stat-card label="Torneos activos" :value="$stats['active_tournaments']" icon="trophy" :href="route('admin.tournaments.index')">{{ $stats['tournaments'] }} en total</x-stat-card>
         <x-stat-card label="Equipos" :value="$stats['teams']" icon="shield" accent="sport" :href="auth()->user()->can('teams.manage') ? route('admin.teams.index') : null" />
         <x-stat-card label="Jugadores" :value="$stats['players']" icon="user" accent="mute" :href="auth()->user()->can('players.manage') ? route('admin.players.index') : null">{{ $stats['rostered'] }} en plantillas</x-stat-card>
-        <x-stat-card label="Partidos" :value="$stats['games']" icon="scoreboard" accent="mute">Calendario: Fase 2</x-stat-card>
+        <x-stat-card label="Partidos" :value="$stats['games']" icon="scoreboard" accent="mute" :href="route('admin.games.all')">Calendario y resultados</x-stat-card>
     </div>
 
     <div class="mt-8 grid gap-6 lg:grid-cols-3">
@@ -37,9 +37,9 @@
             </div>
 
             <div class="mt-8">
-                <x-section-title title="Próximos partidos" />
+                <x-section-title title="Próximos partidos" :href="route('admin.games.all')" />
                 @if ($upcoming->isEmpty())
-                    <x-empty-state icon="calendar" title="Calendario pendiente">La programación de partidos y el registro de resultados llegan en la Fase 2.</x-empty-state>
+                    <x-empty-state icon="calendar" title="Sin partidos próximos">Programe partidos desde el calendario de cada torneo.</x-empty-state>
                 @else
                     <div class="grid gap-3 sm:grid-cols-2">@foreach ($upcoming as $g)<x-game-card :game="$g" compact />@endforeach</div>
                 @endif

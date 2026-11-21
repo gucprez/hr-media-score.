@@ -29,7 +29,10 @@
                     <x-form.input name="edition" label="Edición" :value="$tournament->edition" maxlength="20" placeholder="XIV" />
                     <x-form.input name="name" label="Nombre del torneo" :value="$tournament->name" required maxlength="180" class="sm:col-span-3" />
                 </div>
-                <x-form.input name="motto" label="Lema" :value="$tournament->motto" maxlength="180" />
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <x-form.input name="motto" label="Lema" :value="$tournament->motto" maxlength="180" />
+                    <x-form.input name="sponsor_name" label="Copa / patrocinador principal" :value="$tournament->sponsor_name" maxlength="120" placeholder="Copa La Tendencia Podcast" hint="Aparece en las carteleras." />
+                </div>
                 <div class="grid gap-5 sm:grid-cols-3">
                     <x-form.input name="category" label="Categoría" :value="$tournament->category" maxlength="80" placeholder="Juvenil Infantil" />
                     <x-form.select name="gender" label="Rama" :options="App\Enums\TournamentGender::options()" :value="$tournament->gender" required />
@@ -46,6 +49,7 @@
             <div class="space-y-6">
                 <div class="card space-y-5 p-5 sm:p-6">
                     <x-form.image name="logo" label="Logo del torneo" :current="$tournament->logoUrl()" remove-name="remove_logo" />
+                    <x-form.image name="sponsor_logo" label="Logo de la copa / patrocinador" :current="$tournament->sponsorLogoUrl()" remove-name="remove_sponsor_logo" hint="Opcional. Se muestra en las carteleras en lugar del texto." />
                 </div>
                 <div class="card space-y-4 p-5 sm:p-6">
                     <x-form.checkbox name="is_public" label="Visible en el portal" :checked="$tournament->is_public" hint="Los torneos en borrador nunca se publican." />
@@ -94,6 +98,19 @@
                     <x-form.input type="number" name="rules[points_per_forfeit]" label="Puntos por forfeit" :value="$r?->points_per_forfeit" min="0" max="5" required />
                     <x-form.input type="number" name="rules[min_players_to_start]" label="Mín. jugadores para iniciar" :value="$r?->min_players_to_start" min="1" max="5" required />
                     <x-form.input type="number" name="rules[tolerance_minutes]" label="Tolerancia (min)" :value="$r?->tolerance_minutes" min="0" max="120" />
+                </div>
+                @php $tb = array_values(old('rules.tiebreakers', $r?->tiebreakers ?? [])); @endphp
+                <div class="mt-6">
+                    <p class="label">Criterios de desempate (en orden)</p>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach (range(0, 3) as $i)
+                            <select name="rules[tiebreakers][]" class="input" aria-label="Criterio {{ $i + 1 }}">
+                                <option value="">{{ $i + 1 }}. —</option>
+                                @foreach (App\Services\StandingsCalculator::CRITERIA as $k => $label)<option value="{{ $k }}" @selected(($tb[$i] ?? null) === $k)>{{ $i + 1 }}. {{ $label }}</option>@endforeach
+                            </select>
+                        @endforeach
+                    </div>
+                    <p class="hint">Se aplican cuando dos o más equipos empatan en puntos. Al final se ordena alfabéticamente.</p>
                 </div>
             </section>
             <section class="card grid gap-5 p-5 sm:p-6 lg:grid-cols-2">

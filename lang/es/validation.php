@@ -13,6 +13,10 @@ return [
     'confirmed' => 'La confirmación de :attribute no coincide.',
     'current_password' => 'La contraseña actual es incorrecta.',
     'date' => 'El campo :attribute no es una fecha válida.',
+    'date_format' => 'El campo :attribute no tiene el formato :format.',
+    'different' => 'Los campos :attribute y :other deben ser diferentes.',
+    'distinct' => 'El campo :attribute tiene un valor repetido.',
+    'required_with' => 'El campo :attribute es obligatorio cuando se indica :values.',
     'dimensions' => 'La imagen :attribute tiene dimensiones no permitidas.',
     'email' => 'El campo :attribute debe ser un correo electrónico válido.',
     'enum' => 'El valor seleccionado en :attribute no es válido.',
@@ -56,7 +60,7 @@ return [
     'url' => 'El campo :attribute debe ser una URL válida.',
 
     'attributes' => [
-        'name' => 'nombre', 'email' => 'correo electrónico', 'password' => 'contraseña', 'current_password' => 'contraseña actual',
+        'name' => 'nombre', 'founded_year' => 'año de fundación', 'sponsor_name' => 'copa / patrocinador', 'sponsor_logo' => 'logo del patrocinador', 'home_team_id' => 'local', 'away_team_id' => 'visitante', 'stage' => 'fase', 'round_number' => 'jornada', 'scorekeeper_id' => 'anotador', 'venue_id' => 'sede', 'date' => 'fecha', 'time' => 'hora', 'forfeit_loser' => 'perdedor por forfeit', 'home_score' => 'marcador local', 'away_score' => 'marcador visitante', 'email' => 'correo electrónico', 'password' => 'contraseña', 'current_password' => 'contraseña actual',
         'role' => 'rol', 'club_id' => 'organización', 'first_name' => 'nombres', 'last_name' => 'apellidos',
         'birth_date' => 'fecha de nacimiento', 'document_number' => 'documento', 'position' => 'posición',
         'height_cm' => 'estatura', 'weight_kg' => 'peso', 'photo' => 'fotografía', 'logo' => 'logo',

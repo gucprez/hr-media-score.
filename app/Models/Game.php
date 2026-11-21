@@ -19,8 +19,8 @@ class Game extends Model
 
     protected $fillable = [
         'club_id', 'tournament_id', 'venue_id', 'home_team_id', 'away_team_id', 'stage', 'round_number',
-        'series_key', 'series_game_number', 'scheduled_at', 'status', 'home_score', 'away_score',
-        'current_period', 'winner_team_id', 'scorekeeper_id', 'started_at', 'finished_at', 'notes',
+        'series_key', 'series_id', 'series_game_number', 'scheduled_at', 'status', 'home_score', 'away_score',
+        'current_period', 'winner_team_id', 'forfeit_loser_team_id', 'scorekeeper_id', 'started_at', 'finished_at', 'notes',
     ];
 
     protected function casts(): array
@@ -52,6 +52,11 @@ class Game extends Model
     public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(TournamentTeam::class, 'away_team_id');
+    }
+
+    public function series(): BelongsTo
+    {
+        return $this->belongsTo(PlayoffSeries::class, 'series_id');
     }
 
     public function winner(): BelongsTo
@@ -94,5 +99,20 @@ class Game extends Model
     public function scopeInPublishedTournament(Builder $q): Builder
     {
         return $q->whereHas('tournament', fn ($t) => $t->published());
+    }
+
+    /** El partido enfrenta a este equipo inscrito. */
+    public function involves(int $tournamentTeamId): bool
+    {
+        return in_array($tournamentTeamId, [$this->home_team_id, $this->away_team_id], true);
+    }
+
+    public function loserTeamId(): ?int
+    {
+        if (! $this->winner_team_id) {
+            return null;
+        }
+
+        return $this->winner_team_id === $this->home_team_id ? $this->away_team_id : $this->home_team_id;
     }
 }

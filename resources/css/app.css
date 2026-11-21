@@ -4,6 +4,9 @@
 @import '@fontsource/barlow-condensed/600.css';
 @import '@fontsource/barlow-condensed/700.css';
 @import '@fontsource/barlow-condensed/800.css';
+@import '@fontsource/barlow-condensed/700-italic.css';
+@import '@fontsource/barlow-condensed/800-italic.css';
+@import '@fontsource/barlow-condensed/900-italic.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -27,6 +30,10 @@
     --color-brand-600: #B91C2A;
     --color-brand-400: #EF4452;
     --color-sport: #FF7A00;     /* naranja deportivo */
+    --color-gold: #FFC72C;      /* dorado de cartelera */
+    --color-gold-deep: #E79A00;
+    --color-home: #D92332;      /* lado local (rojo) */
+    --color-away: #1F5BD8;      /* lado visitante (azul) */
     --color-success: #22C55E;
     --color-warning: #F5B400;
 
@@ -64,6 +71,10 @@
 
 @utility badge {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
+}
+
+@utility poster-type {
+    @apply font-display font-extrabold uppercase italic tracking-tight;
 }
 
 @layer components {
@@ -108,4 +119,26 @@
     .stripes { background: repeating-linear-gradient(115deg, var(--color-brand) 0 6px, transparent 6px 12px); }
     .scrollbar-none { scrollbar-width: none; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
+
+    /* ── Estilo cartelera (Fase 2) ─────────────────────────── */
+    .text-gold-grad { background: linear-gradient(180deg, #FFE27A 0%, #FFC72C 45%, #E79A00 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .text-chrome { background: linear-gradient(180deg, #FFFFFF 0%, #E6EAF0 45%, #9AA4B2 55%, #FFFFFF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .poster-shadow { filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)) drop-shadow(0 8px 18px rgba(0,0,0,.45)); }
+    .arena-bg {
+        background:
+            radial-gradient(40% 35% at 0% 45%, rgba(217,35,50,.55), transparent 70%),
+            radial-gradient(40% 35% at 100% 45%, rgba(31,91,216,.55), transparent 70%),
+            radial-gradient(60% 30% at 50% 0%, rgba(120,150,255,.25), transparent 70%),
+            linear-gradient(180deg, #070B14 0%, #0B101A 55%, #2A1408 82%, #5A2C0E 100%);
+    }
+    .arena-lights { background-image: radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 2.5px); background-size: 46px 28px; mask-image: linear-gradient(180deg, #000 0%, transparent 22%); }
+    .court-floor { background: repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 64px), linear-gradient(180deg, #8A4A1C, #5A2C0E); }
+    .plate { @apply relative px-6 py-2 text-center poster-type text-white; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
+    .plate-home { background: linear-gradient(180deg, #F0313F, #A8121F); box-shadow: inset 0 0 0 2px rgba(255,199,44,.65); }
+    .plate-away { background: linear-gradient(180deg, #2E6CF0, #13379A); box-shadow: inset 0 0 0 2px rgba(150,190,255,.7); }
+    .ribbon-gold { background: linear-gradient(180deg, #FFE27A, #FFC72C 50%, #E79A00); color: #0B101A; clip-path: polygon(3% 0, 97% 0, 100% 50%, 97% 100%, 3% 100%, 0 50%); }
+    .ribbon-red { background: linear-gradient(180deg, #E8303D, #9E111C); box-shadow: inset 0 0 0 2px rgba(255,199,44,.75); clip-path: polygon(2.5% 0, 97.5% 0, 100% 50%, 97.5% 100%, 2.5% 100%, 0 50%); }
+    .glow-home { box-shadow: 0 0 0 3px rgba(240,49,63,.9), 0 0 28px 6px rgba(217,35,50,.6); }
+    .glow-away { box-shadow: 0 0 0 3px rgba(46,108,240,.9), 0 0 28px 6px rgba(31,91,216,.6); }
+    .vs-mark { @apply poster-type; background: linear-gradient(180deg, #FFFFFF 0%, #E6EAF0 45%, #9AA4B2 55%, #FFFFFF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)) drop-shadow(0 8px 18px rgba(0,0,0,.45)); }
 }

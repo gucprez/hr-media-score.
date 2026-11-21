@@ -16,6 +16,8 @@ Route::get('/manifest.webmanifest', Public\ManifestController::class)->name('man
 Route::name('public.')->group(function () {
     Route::get('/torneos', [Public\TournamentController::class, 'index'])->name('tournaments.index');
     Route::get('/torneos/{id}/{slug?}', [Public\TournamentController::class, 'show'])->whereNumber('id')->name('tournaments.show');
+    Route::get('/torneos/{id}/cartelera/{date}', Public\PosterController::class)->whereNumber('id')
+        ->where('date', '\d{4}-\d{2}-\d{2}')->name('tournaments.poster');
     Route::get('/equipos', [Public\TeamController::class, 'index'])->name('teams.index');
     Route::get('/equipos/{id}/{slug?}', [Public\TeamController::class, 'show'])->whereNumber('id')->name('teams.show');
     Route::get('/jugadores', [Public\PlayerController::class, 'index'])->name('players.index');
@@ -58,6 +60,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
 
         return view('admin.tournaments.roster', compact('tournament', 'registration'));
     })->can('manageRosters', 'tournament')->name('tournaments.roster');
+
+    // Fase 2 — Competiciones
+    Route::get('games', [Admin\GameController::class, 'all'])->name('games.all');
+    Route::prefix('tournaments/{tournament}')->name('tournaments.')->group(function () {
+        Route::get('games', [Admin\GameController::class, 'index'])->name('games.index');
+        Route::get('games/create', [Admin\GameController::class, 'create'])->name('games.create');
+        Route::post('games', [Admin\GameController::class, 'store'])->name('games.store');
+        Route::get('games/{game}/edit', [Admin\GameController::class, 'edit'])->name('games.edit');
+        Route::put('games/{game}', [Admin\GameController::class, 'update'])->name('games.update');
+        Route::delete('games/{game}', [Admin\GameController::class, 'destroy'])->name('games.destroy');
+        Route::get('games/{game}/result', [Admin\GameController::class, 'editResult'])->name('games.result');
+        Route::put('games/{game}/result', [Admin\GameController::class, 'updateResult'])->name('games.result.update');
+        Route::post('schedule', [Admin\GameController::class, 'generate'])->name('schedule');
+        Route::post('standings', [Admin\GameController::class, 'recalculate'])->name('standings');
+        Route::post('playoffs', [Admin\GameController::class, 'generatePlayoffs'])->name('playoffs');
+    });
 
     Route::get('audit', [Admin\AuditLogController::class, 'index'])->name('audit.index');
 

@@ -14,6 +14,7 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 @if ($tournament->is_public && $tournament->status->value !== 'draft')<a href="{{ route('public.tournaments.show', [$tournament->id, $tournament->slug]) }}" target="_blank" class="btn-secondary"><x-icon name="external" class="size-4" />Portal</a>@endif
+                <a href="{{ route('admin.tournaments.games.index', $tournament) }}" class="btn-primary"><x-icon name="calendar" class="size-4" />Calendario y resultados</a>
                 @can('update', $tournament)<a href="{{ route('admin.tournaments.edit', $tournament) }}" class="btn-secondary"><x-icon name="pencil" class="size-4" />Editar</a>@endcan
             </div>
         </div>

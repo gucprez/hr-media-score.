@@ -22,7 +22,7 @@ class Tournament extends Model
     use Auditable, BelongsToClub, HasFactory, HasSlug, SoftDeletes;
 
     protected $fillable = [
-        'club_id', 'season_id', 'venue_id', 'name', 'edition', 'motto', 'category',
+        'club_id', 'season_id', 'venue_id', 'name', 'edition', 'motto', 'sponsor_name', 'category',
         'gender', 'status', 'starts_on', 'ends_on', 'description', 'is_featured', 'is_public',
     ];
 
@@ -89,6 +89,11 @@ class Tournament extends Model
         return $this->hasMany(Standing::class)->orderByRaw('position IS NULL, position')->orderByDesc('standing_points');
     }
 
+    public function series(): HasMany
+    {
+        return $this->hasMany(PlayoffSeries::class);
+    }
+
     public function sanctions(): HasMany
     {
         return $this->hasMany(Sanction::class);
@@ -103,6 +108,11 @@ class Tournament extends Model
     public function scopePublished(Builder $q): Builder
     {
         return $q->where('is_public', true)->where('status', '!=', TournamentStatus::Draft->value);
+    }
+
+    public function sponsorLogoUrl(): ?string
+    {
+        return $this->sponsor_logo_path ? Storage::disk('public')->url($this->sponsor_logo_path) : null;
     }
 
     public function logoUrl(): ?string

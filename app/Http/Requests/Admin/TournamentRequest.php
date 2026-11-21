@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\TournamentGender;
 use App\Enums\TournamentStatus;
 use App\Models\Tournament;
+use App\Services\StandingsCalculator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +31,9 @@ class TournamentRequest extends FormRequest
                 Rule::unique('tournaments')->where('club_id', $club)->where('name', $this->input('name'))
                     ->whereNull('deleted_at')->ignore($this->route('tournament'))],
             'motto' => ['nullable', 'string', 'max:180'],
+            'sponsor_name' => ['nullable', 'string', 'max:120'],
+            'sponsor_logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:4096', 'dimensions:max_width=5000,max_height=5000'],
+            'remove_sponsor_logo' => ['boolean'],
             'category' => ['nullable', 'string', 'max:80'],
             'gender' => ['required', Rule::enum(TournamentGender::class)],
             'status' => ['required', Rule::enum(TournamentStatus::class)],
@@ -67,6 +71,8 @@ class TournamentRequest extends FormRequest
             'rules.points_per_win' => ['required', 'integer', 'min:0', 'max:5'],
             'rules.points_per_loss' => ['required', 'integer', 'min:0', 'max:5'],
             'rules.points_per_forfeit' => ['required', 'integer', 'min:0', 'max:5'],
+            'rules.tiebreakers' => ['nullable', 'array', 'max:5'],
+            'rules.tiebreakers.*' => ['nullable', 'distinct', Rule::in(array_keys(StandingsCalculator::CRITERIA))],
             'rules.tolerance_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
             'rules.min_players_to_start' => ['required', 'integer', 'min:1', 'max:5'],
             'rules.sanctions_policy' => ['nullable', 'string', 'max:10000'],
@@ -88,17 +94,23 @@ class TournamentRequest extends FormRequest
             'is_featured' => $this->boolean('is_featured'),
             'is_public' => $this->boolean('is_public'),
             'remove_logo' => $this->boolean('remove_logo'),
+            'remove_sponsor_logo' => $this->boolean('remove_sponsor_logo'),
             'rules' => $rules,
         ]);
     }
 
     public function tournamentData(): array
     {
-        return collect($this->validatedForClub())->except('rules')->all();
+        return collect($this->validatedForClub())->except(['rules', 'sponsor_logo', 'remove_sponsor_logo'])->all();
     }
 
     public function rulesData(): array
     {
-        return $this->validated('rules', []);
+        $rules = $this->validated('rules', []);
+        if (array_key_exists('tiebreakers', $rules)) {
+            $rules['tiebreakers'] = array_values(array_filter($rules['tiebreakers'] ?? []));
+        }
+
+        return $rules;
     }
 }

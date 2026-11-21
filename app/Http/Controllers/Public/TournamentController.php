@@ -34,7 +34,8 @@ class TournamentController extends Controller
             ->orderByRaw('scheduled_at IS NULL, scheduled_at')->get();
 
         $standings = $tournament->standings()->with('tournamentTeam.team')->get();
+        $series = $tournament->series()->with(['highSeed.team', 'lowSeed.team', 'winner.team'])->get();
 
-        return view('public.tournaments.show', compact('tournament', 'registrations', 'games', 'standings'));
+        return view('public.tournaments.show', compact('tournament', 'registrations', 'games', 'standings', 'series'));
     }
 }

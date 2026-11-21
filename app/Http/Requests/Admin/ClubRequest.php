@@ -20,6 +20,7 @@ class ClubRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:150', Rule::unique('clubs', 'name')->ignore($this->route('club'))],
             'short_name' => ['nullable', 'string', 'max:30'],
+            'founded_year' => ['nullable', 'integer', 'min:1800', 'max:'.now()->year],
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
             'country' => ['required', 'string', 'size:2', 'alpha'],

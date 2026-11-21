@@ -4,10 +4,13 @@ namespace Database\Seeders;
 
 use App\Actions\RegisterTeamInTournament;
 use App\Actions\SaveTournament;
+use App\Enums\GameStage;
+use App\Enums\GameStatus;
 use App\Enums\RegistrationStatus;
 use App\Enums\TournamentGender;
 use App\Enums\TournamentStatus;
 use App\Models\Club;
+use App\Models\Game;
 use App\Models\Season;
 use App\Models\Team;
 use App\Models\Tournament;
@@ -28,6 +31,7 @@ class GustavoBehallSeeder extends Seeder
         $club = Club::firstOrCreate(['slug' => 'club-gustavo-behall'], [
             'name' => 'Club Gustavo Behall',
             'short_name' => 'GB',
+            'founded_year' => 1920,
             'city' => 'Puerto Plata',
             'province' => 'Puerto Plata',
             'country' => 'DO',
@@ -56,6 +60,7 @@ class GustavoBehallSeeder extends Seeder
                 'name' => 'Torneo Juvenil Infantil con Refuerzos',
                 'edition' => 'XIV',
                 'motto' => 'Volviendo a la Tradición',
+                'sponsor_name' => 'Copa La Tendencia Podcast',
                 'category' => 'Juvenil Infantil',
                 'gender' => TournamentGender::Male,
                 'status' => TournamentStatus::Registration,
@@ -91,11 +96,32 @@ class GustavoBehallSeeder extends Seeder
                 'secondary_colors' => [['name' => 'Amarillo', 'hex' => '#FFC72C'], ['name' => 'Negro', 'hex' => '#111111']]],
         ];
 
+        $reg = [];
         foreach ($teams as $data) {
             $team = Team::firstOrCreate(['club_id' => $club->id, 'name' => $data['name']], $data + ['is_active' => true]);
-            if (! $tournament->registrations()->where('team_id', $team->id)->exists()) {
-                app(RegisterTeamInTournament::class)->handle($tournament, $team, ['status' => RegistrationStatus::Confirmed]);
-            }
+            $reg[$data['name']] = $tournament->registrations()->where('team_id', $team->id)->first()
+                ?? app(RegisterTeamInTournament::class)->handle($tournament, $team, ['status' => RegistrationStatus::Confirmed]);
+        }
+
+        // Datos del afiche oficial (Fase 2).
+        $club->founded_year ??= 1920;
+        $club->save();
+        $tournament->sponsor_name ??= 'Copa La Tendencia Podcast';
+        $tournament->save();
+
+        // Jornada 1 — sábado 21 de noviembre de 2026, doble cartelera (afiche oficial).
+        $jornada1 = [
+            ['Ninjas GB', 'Cacuses', '2026-11-21 18:00:00'],
+            ['Calle Duarte', 'Balkanes', '2026-11-21 19:00:00'],
+        ];
+        foreach ($jornada1 as [$home, $away, $at]) {
+            Game::firstOrCreate(
+                ['tournament_id' => $tournament->id, 'home_team_id' => $reg[$home]->id, 'away_team_id' => $reg[$away]->id, 'stage' => GameStage::Regular->value],
+                ['club_id' => $club->id, 'venue_id' => $venue->id, 'round_number' => 1, 'scheduled_at' => $at, 'status' => GameStatus::Scheduled],
+            );
+        }
+        if ($tournament->status === TournamentStatus::Registration) {
+            $tournament->update(['status' => TournamentStatus::InProgress]);
         }
     }
 }

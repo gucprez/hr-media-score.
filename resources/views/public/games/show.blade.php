@@ -1,31 +1,15 @@
-@php $home = $game->homeTeam; $away = $game->awayTeam; $done = $game->status->isFinished(); $live = $game->status === App\Enums\GameStatus::Live; @endphp
+@php $home = $game->homeTeam; $away = $game->awayTeam; @endphp
 <x-layouts.public :title="$home->displayName().' vs '.$away->displayName()">
-    <section class="relative overflow-hidden border-b divider">
-        <div class="absolute inset-0" style="background: linear-gradient(90deg, {{ $home->team->primary_color ?? '#222D41' }}40, transparent 40%, transparent 60%, {{ $away->team->primary_color ?? '#222D41' }}40)"></div>
+    <section class="arena-bg relative overflow-hidden border-b divider">
+        <div class="arena-lights absolute inset-0 opacity-60"></div>
         <div class="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-            <p class="text-center"><a href="{{ route('public.tournaments.show', [$game->tournament->id, $game->tournament->slug]) }}" class="eyebrow hover:text-white">{{ $game->tournament->fullName() }} · {{ $game->stage->label() }}</a></p>
-            <div class="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-                @foreach ([[$home, $game->home_score, 'Local'], null, [$away, $game->away_score, 'Visitante']] as $side)
-                    @if ($side === null)
-                        <div class="text-center">
-                            @if ($done || $live)
-                                <p class="font-score text-5xl sm:text-8xl">{{ $game->home_score }}<span class="mx-2 text-mute">–</span>{{ $game->away_score }}</p>
-                                <span class="{{ $live ? 'badge-live' : 'badge-final' }} mt-2">{{ $live ? 'En vivo' : 'Final' }}</span>
-                            @else
-                                <p class="font-display text-3xl font-bold text-mute sm:text-5xl">VS</p>
-                                <span class="{{ $game->status->badgeClass() }} mt-2">{{ $game->status->label() }}</span>
-                            @endif
-                        </div>
-                    @else
-                        <a href="{{ route('public.teams.show', [$side[0]->team->id, $side[0]->team->slug]) }}" class="flex flex-col items-center gap-3 text-center">
-                            <x-team-badge :team="$side[0]->team" size="xl" class="size-16! sm:size-28!" />
-                            <span class="font-display text-lg font-bold uppercase sm:text-3xl">{{ $side[0]->displayName() }}</span>
-                            <span class="text-xs text-mute">{{ $side[2] }}</span>
-                        </a>
-                    @endif
-                @endforeach
-            </div>
-            <p class="mt-6 text-center text-sm text-mute">{{ $game->scheduled_at ? $game->scheduled_at->translatedFormat('l j \d\e F, g:i A') : 'Fecha por confirmar' }}{{ $game->venue ? ' · '.$game->venue->name : '' }}</p>
+            <p class="text-center"><a href="{{ route('public.tournaments.show', [$game->tournament->id, $game->tournament->slug]) }}" class="eyebrow hover:text-white">{{ $game->tournament->fullName() }}</a></p>
+            <p class="mt-2 text-center"><span class="ribbon-gold poster-type inline-block px-8 py-1 text-base not-italic tracking-wider sm:text-xl">{{ $game->stage->label() }}@if ($game->round_number && $game->stage === App\Enums\GameStage::Regular) · Jornada {{ $game->round_number }}@endif @if ($game->series_game_number) · Juego {{ $game->series_game_number }}@endif</span></p>
+            <x-matchup :game="$game" size="lg" :link="false" class="mt-8" />
+            <p class="mt-8 text-center text-sm text-mute">{{ $game->scheduled_at ? $game->scheduled_at->translatedFormat('l j \d\e F, g:i A') : 'Fecha por confirmar' }}{{ $game->venue ? ' · '.$game->venue->name : '' }}</p>
+            @if ($game->scheduled_at)
+                <p class="mt-3 text-center"><a href="{{ route('public.tournaments.poster', [$game->tournament->id, $game->scheduled_at->toDateString()]) }}" class="btn-secondary btn-sm"><x-icon name="image" class="size-4 text-gold" />Cartelera del día</a></p>
+            @endif
         </div>
     </section>
     <div class="mx-auto max-w-5xl space-y-10 px-4 py-10 sm:px-6">

@@ -30,7 +30,7 @@
 
     <nav class="sticky top-16 z-40 border-b divider bg-ink-950/90 backdrop-blur" aria-label="Secciones del torneo">
         <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 scrollbar-none sm:px-6">
-            @foreach (['equipos' => 'Equipos', 'calendario' => 'Calendario y resultados', 'posiciones' => 'Posiciones', 'reglamento' => 'Reglamento'] as $id => $label)
+            @foreach (['equipos' => 'Equipos', 'calendario' => 'Calendario y resultados', 'posiciones' => 'Posiciones'] + ($series->isNotEmpty() ? ['playoffs' => 'Playoffs'] : []) + ['reglamento' => 'Reglamento'] as $id => $label)
                 <a href="#{{ $id }}" class="shrink-0 px-3 py-3.5 text-sm font-semibold text-mute hover:text-white">{{ $label }}</a>
             @endforeach
         </div>
@@ -81,7 +81,28 @@
             @if ($games->isEmpty())
                 <x-empty-state icon="calendar" title="Calendario por publicar">La organización publicará aquí las fechas, horarios y resultados oficiales.</x-empty-state>
             @else
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">@foreach ($games as $g)<x-game-card :game="$g" />@endforeach</div>
+                @php
+                    $byRound = $games->where('stage', App\Enums\GameStage::Regular)->sortBy(fn ($g) => [$g->round_number ?? 999, $g->scheduled_at?->timestamp ?? PHP_INT_MAX])->groupBy(fn ($g) => $g->round_number ?? 0);
+                    $playoffGames = $games->where('stage', '!=', App\Enums\GameStage::Regular);
+                @endphp
+                <div class="space-y-10">
+                    @foreach ($byRound as $round => $rg)
+                        @php $days = $rg->filter(fn ($g) => $g->scheduled_at)->map(fn ($g) => $g->scheduled_at->toDateString())->unique(); @endphp
+                        <div>
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                                <h3 class="poster-type text-2xl">{{ $round ? 'Jornada '.$round : 'Por programar' }} @if ($days->count() === 1)<span class="text-base text-mute not-italic">· {{ \Carbon\Carbon::parse($days->first())->translatedFormat('l j \d\e F') }}</span>@endif</h3>
+                                @foreach ($days as $d)<a href="{{ route('public.tournaments.poster', [$tournament->id, $d]) }}" class="btn-secondary btn-sm"><x-icon name="image" class="size-4 text-gold" />Cartelera{{ $days->count() > 1 ? ' '.\Carbon\Carbon::parse($d)->translatedFormat('j M') : '' }}</a>@endforeach
+                            </div>
+                            <div class="grid gap-4 md:grid-cols-2">@foreach ($rg as $g)<x-game-card :game="$g" />@endforeach</div>
+                        </div>
+                    @endforeach
+                    @if ($playoffGames->isNotEmpty())
+                        <div>
+                            <h3 class="poster-type mb-4 text-2xl">Playoffs</h3>
+                            <div class="grid gap-4 md:grid-cols-2">@foreach ($playoffGames as $g)<x-game-card :game="$g" />@endforeach</div>
+                        </div>
+                    @endif
+                </div>
             @endif
         </section>
 
@@ -89,6 +110,39 @@
             <x-section-title title="Tabla de posiciones" />
             @include('public.partials.standings', ['standings' => $standings, 'registrations' => $registrations, 'rules' => $r])
         </section>
+
+        @if ($series->isNotEmpty())
+            <section id="playoffs" class="scroll-mt-32">
+                <x-section-title title="Playoffs" />
+                <div class="grid items-center gap-6 lg:grid-cols-2">
+                    @foreach ($series->sortBy(fn ($s) => $s->stage->value === 'final' ? 2 : 1) as $s)
+                        <div class="card relative overflow-hidden">
+                            <div class="arena-bg absolute inset-0 opacity-60"></div>
+                            <div class="relative p-5">
+                                <div class="mb-4 flex items-center justify-between">
+                                    <p class="poster-type text-2xl">{{ $s->label() }}</p>
+                                    <span class="ribbon-gold poster-type px-5 py-0.5 text-sm not-italic">Al mejor de {{ $s->best_of }}</span>
+                                </div>
+                                @foreach ([[$s->highSeed, $s->high_wins, $s->high_seed_position, 'home'], [$s->lowSeed, $s->low_wins, $s->low_seed_position, 'away']] as [$reg, $wins, $pos, $side])
+                                    <div @class(['flex items-center gap-3 rounded-xl px-3 py-2.5', 'bg-white/5' => $reg && $s->winner_team_id === $reg->id])>
+                                        @if ($reg)
+                                            <span class="w-6 text-center font-score text-mute">{{ $pos }}</span>
+                                            <x-team-badge :team="$reg->team" size="md" class="rounded-full! ring-0! {{ $side === 'home' ? 'glow-home' : 'glow-away' }}" />
+                                            <span class="flex-1 font-display text-xl font-bold uppercase">{{ $reg->displayName() }}</span>
+                                            <span class="font-score text-4xl {{ $s->winner_team_id === $reg->id ? 'text-gold' : '' }}">{{ $wins }}</span>
+                                        @else
+                                            <span class="w-6"></span><span class="grid size-11 place-items-center rounded-full border border-dashed border-white/20 text-mute">?</span>
+                                            <span class="flex-1 text-mute">Por definir</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                                <p class="mt-3 text-center text-xs uppercase tracking-wider text-mute">{{ $s->statusLabel() }}{{ $s->winner ? ' · Avanza '.$s->winner->displayName() : '' }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         <section id="reglamento" class="scroll-mt-32">
             <x-section-title title="Reglamento" />

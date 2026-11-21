@@ -6,6 +6,7 @@
             <div class="grid gap-5 sm:grid-cols-3">
                 <x-form.input name="name" label="Nombre" :value="$club->name" required maxlength="150" class="sm:col-span-2" />
                 <x-form.input name="short_name" label="Siglas" :value="$club->short_name" maxlength="30" />
+                <x-form.input type="number" name="founded_year" label="Año de fundación" :value="$club->founded_year" min="1800" :max="now()->year" />
                 <x-form.input name="city" label="Ciudad" :value="$club->city" maxlength="100" />
                 <x-form.input name="province" label="Provincia" :value="$club->province" maxlength="100" />
                 <x-form.input name="country" label="País (ISO)" :value="$club->country ?? 'DO'" required maxlength="2" minlength="2" pattern="[A-Za-z]{2}" />

@@ -34,7 +34,9 @@ class DashboardController extends Controller
             'games' => Game::visibleTo($user)->count(),
         ];
 
-        $upcoming = Game::visibleTo($user)->upcoming()->with(['homeTeam.team', 'awayTeam.team', 'tournament'])->take(5)->get();
+        $upcoming = Game::visibleTo($user)->upcoming()
+            ->when(! $user->can('games.manage'), fn ($q) => $q->where('scorekeeper_id', $user->id))
+            ->with(['homeTeam.team', 'awayTeam.team', 'tournament', 'venue'])->take(4)->get();
 
         $activity = $user->can('audit.view')
             ? AuditLog::with('user')

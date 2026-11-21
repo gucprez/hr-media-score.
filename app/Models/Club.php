@@ -15,7 +15,7 @@ class Club extends Model
     use Auditable, HasFactory, HasSlug, SoftDeletes;
 
     protected $fillable = [
-        'name', 'short_name', 'city', 'province', 'country', 'email', 'phone',
+        'name', 'short_name', 'founded_year', 'city', 'province', 'country', 'email', 'phone',
         'website', 'primary_color', 'secondary_color', 'description', 'is_active',
     ];
 

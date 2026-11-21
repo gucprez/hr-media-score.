@@ -40,6 +40,25 @@
     </section>
 
     <div class="mx-auto max-w-7xl space-y-16 px-4 py-12 sm:px-6">
+        @if ($matchday->isNotEmpty())
+            @php $mdDate = $matchday->first()->scheduled_at; @endphp
+            <section class="arena-bg relative overflow-hidden rounded-3xl border border-white/10 px-4 py-8 sm:px-10 sm:py-10">
+                <div class="arena-lights absolute inset-0 opacity-60"></div>
+                <div class="relative flex flex-col items-center gap-3 text-center">
+                    <p class="eyebrow text-gold">{{ $mdDate->isToday() ? 'Hoy se juega' : 'Próxima jornada' }}@if ($matchday->first()->round_number) · Jornada {{ $matchday->first()->round_number }}@endif</p>
+                    <p class="ribbon-red poster-type w-full max-w-2xl py-2 text-2xl text-white sm:text-4xl">{{ $mdDate->translatedFormat('l j \d\e F') }}</p>
+                    @if ($matchday->count() > 1)<p class="ribbon-gold poster-type px-10 py-1 text-lg not-italic tracking-wider sm:text-2xl">{{ $matchday->every(fn ($g) => $g->status->isFinished()) ? 'Resultados' : ($matchday->count() === 2 ? 'Doble cartelera' : ($matchday->count() === 3 ? 'Triple cartelera' : $matchday->count().' partidos')) }}</p>@endif
+                </div>
+                <div class="relative mx-auto mt-8 grid max-w-5xl gap-10 {{ $matchday->count() > 1 ? 'lg:grid-cols-2' : '' }}">
+                    @foreach ($matchday as $g)<x-matchup :game="$g" size="lg" />@endforeach
+                </div>
+                <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3">
+                    @if ($matchday->first()->venue)<span class="badge-muted normal-case tracking-normal"><x-icon name="map-pin" class="size-3.5 text-brand-400" />{{ $matchday->first()->venue->name }}</span>@endif
+                    <a href="{{ route('public.tournaments.poster', [$featured->id, $mdDate->toDateString()]) }}" class="btn-secondary btn-sm"><x-icon name="image" class="size-4 text-gold" />Cartelera para compartir</a>
+                </div>
+            </section>
+        @endif
+
         @if ($live->isNotEmpty())
             <section>
                 <x-section-title title="En vivo" eyebrow="Ahora mismo" />

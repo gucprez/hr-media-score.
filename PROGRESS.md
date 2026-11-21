@@ -40,7 +40,39 @@ Registro de avance del desarrollo. Fechas en zona America/Santo_Domingo.
 - Fechas del torneo: no proporcionadas, quedan vacías.
 - Logos de equipos: no se generaron sustitutos; sin logo se muestran las iniciales sobre los colores del equipo hasta que se suba el oficial.
 
-## Próximo: Fase 2 — Competiciones
+## 2026-11-21 — Fase 2: Competiciones ✅
+
+### Implementado
+- **Calendario**: generador "todos contra todos" (método del círculo) que respeta las vueltas del reglamento, invierte la localía en la 2.ª vuelta y **no duplica partidos ya programados**: completa solo los que faltan, sin que un equipo juegue dos veces en la misma jornada. Programación y edición manual (fecha, hora, sede, jornada, anotador).
+- **Resultados**: por períodos (con prórrogas) o solo marcador final; forfeit (20–0 FIBA); pospuesto/cancelado. No se permiten empates en un resultado final.
+- **Posiciones**: recálculo automático al guardar cada resultado; puntos por victoria/derrota/forfeit del reglamento; desempates configurables en orden (enfrentamiento directo en puntos y en diferencia, diferencia general, puntos anotados, menos recibidos) y orden alfabético como último criterio.
+- **Playoffs** (tabla `playoff_series`): 2 clasificados (final), 3 con pase directo (semifinal 2.º–3.º y final contra el 1.º) o 4 (semifinales 1–4 y 2–3). Series al mejor de N; los juegos se crean a medida que hacen falta (formato 2-2-1 en series de 5/7), los sobrantes se eliminan al decidirse la serie, el ganador avanza solo y el torneo pasa a "Finalizado" al decidirse la final. Un resultado no puede cambiarse si la serie siguiente ya empezó.
+- **Anotador**: registra resultados solo de los partidos que tiene asignados; no puede reprogramar ni eliminar.
+- **Diseño estilo afiche oficial**: enfrentamientos local (rojo) vs visitante (azul), VS cromado, hora en cinta roja, acentos dorados, tipografía condensada en cursiva. Aplicado a portada ("Hoy se juega / Próxima jornada"), calendario por jornadas, ficha de partido, cuadro de playoffs y panel.
+- **Cartelera descargable**: `/torneos/{id}/cartelera/{fecha}` genera el afiche de la jornada (club, edición, lema, copa, fecha, "Doble cartelera" o "Resultados", partidos, sede) y lo descarga como PNG en 1080×1350 (publicación) o 1080×1920 (historia).
+- Campos nuevos: copa/patrocinador del torneo (texto y logo) y año de fundación del club.
+- **Datos oficiales del afiche**: Jornada 1, sábado 21/11/2026 en el Techado: Ninjas GB vs Cacuses (6:00 PM) y Calle Duarte vs Balkanes (7:00 PM); "Copa La Tendencia Podcast"; club fundado en 1920.
+
+### Verificación
+- `php artisan test`: **118 pruebas, 431 aserciones, todas pasan** (24 nuevas de competición: calendario con 4/5/6 equipos, doble vuelta, jornada manual, empates, prórrogas, forfeit, desempate por enfrentamiento directo, flujo completo de playoffs, permisos del anotador, cartelera).
+- Flujo real en navegador: carga de resultados por períodos con prórroga y por marcador final → tabla recalculada → cartelera de resultados descargada como PNG de 1080×1920.
+
+### Defectos encontrados y corregidos
+- Forfeit: el perdedor no quedaba registrado (operador `+=` de PHP no sobrescribe claves) y contaba como derrota normal.
+- Panel de inicio: error al mostrar partidos (relación de sede sin precargar).
+- Nombres de equipos cortados en el calendario del panel y en móvil.
+
+### Producción (VPS)
+- Reportado: error 500 al editar el último equipo en `score.54.39.98.84.sslip.io`. **No reproducible aquí** (ni en modo producción con cachés). Se reforzó la subida de imágenes para que nunca produzca un 500 y se elevaron los límites de PHP en `install-vps.sh`. Falta el registro de errores del servidor para confirmar la causa.
+
+### Pendiente de confirmar con el club
+- Los afiches llaman a los equipos "Ninjas GB, Cacuses GB, Duarte GB, Balkanes GB". En el sistema siguen como se indicó al inicio (Cacuses, Calle Duarte, Balkanes); se cambian en Equipos → Editar.
+- Subir los logos oficiales de los 4 equipos, del club y de la copa: la cartelera los usa automáticamente.
+- Resto del calendario (jornadas 2 y 3): se generan con "Generar serie regular" indicando la fecha.
+
+## Próximo: Fase 3 — Estadísticas en vivo (mesa de anotación)
+
+## (Histórico) Plan original de la Fase 2
 - Generador de calendario todos contra todos (respetando `round_robin_legs`) y programación manual.
 - Registro de resultados por período (asignación de anotador).
 - Recalculo de `standings` con desempates configurables (`tiebreakers`).

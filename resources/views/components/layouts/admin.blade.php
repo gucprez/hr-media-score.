@@ -7,6 +7,7 @@
         ],
         'Competición' => [
             ['admin.tournaments.index', 'Torneos', 'trophy', 'admin.tournaments.*', 'tournaments.view'],
+            ['admin.games.all', 'Partidos y resultados', 'scoreboard', 'admin.games.*', null, ['games.manage', 'games.score']],
             ['admin.seasons.index', 'Temporadas', 'layers', 'admin.seasons.*', 'seasons.manage'],
             ['admin.teams.index', 'Equipos', 'shield', 'admin.teams.*', 'teams.manage'],
             ['admin.players.index', 'Jugadores', 'user', 'admin.players.*', 'players.manage'],
@@ -20,7 +21,7 @@
         ],
     ];
     // Módulos de la Fase 2 (aún no disponibles): se muestran deshabilitados, sin enlaces falsos.
-    $upcoming = [['Calendarios', 'calendar'], ['Partidos y resultados', 'scoreboard'], ['Posiciones', 'list'], ['Mesa de anotación', 'clipboard']];
+    $upcoming = [['Mesa de anotación', 'clipboard'], ['Estadísticas en vivo', 'chart']];
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -46,7 +47,7 @@
     @endif
     <nav class="flex-1 space-y-6 overflow-y-auto px-4 py-5">
         @foreach ($groups as $group => $items)
-            @php $visible = array_filter($items, fn ($i) => $i[4] === null || $u->can($i[4])); @endphp
+            @php $visible = array_filter($items, fn ($i) => isset($i[5]) ? collect($i[5])->contains(fn ($p) => $u->can($p)) : ($i[4] === null || $u->can($i[4]))); @endphp
             @if ($visible)
                 <div>
                     <p class="eyebrow mb-2 px-3 text-[10px]">{{ $group }}</p>
@@ -61,7 +62,7 @@
             @endif
         @endforeach
         <div>
-            <p class="eyebrow mb-2 px-3 text-[10px]">Próximamente · Fase 2–3</p>
+            <p class="eyebrow mb-2 px-3 text-[10px]">Próximamente · Fase 3</p>
             <div class="space-y-1">
                 @foreach ($upcoming as [$label, $icon])
                     <span class="side-link cursor-not-allowed opacity-40" aria-disabled="true"><x-icon :name="$icon" class="size-[18px]" />{{ $label }}</span>
